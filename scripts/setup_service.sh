@@ -26,8 +26,8 @@ if [ "$#" -ne 3 ]; then
     exit 1
 fi
 SERVICE_NAME=$1
-CONTAINERPORT=$2
-HOSTPORT=$3
+CONTAINERPORT=$3
+HOSTPORT=$2
 
 docker build --platform linux/amd64 --no-cache -t $SERVICE_NAME . || exit 1
 
