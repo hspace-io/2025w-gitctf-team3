@@ -1,76 +1,206 @@
-# git-base-team3-test
+# Git-based CTF
 
-간단한 Flask 기반 CTF/리서치 팀 모집/워게임 앱을 Docker로 바로 띄울 수 있도록 정리했습니다.
+Git-based CTF is a novel attack-and-defense CTF platform that can be easily
+hosted as an in-course activity proposed in our [paper](https://www.usenix.org/system/files/conference/ase18/ase18-paper_wi.pdf) at USENIX ASE. This
+repository contains [scripts](scripts) for automating ```Git-based CTF```. To
+see how to configure and play Git-based CTF, see the followings.
 
-## 요구사항
-- Docker Desktop (Compose 포함)
-- 열린 포트: 웹 5000, MySQL 기본 3306 (이미 사용 중이면 Compose에서 포트만 조정)
+**If you want to see the version covered in our
+[paper](https://www.usenix.org/system/files/conference/ase18/ase18-paper_wi.pdf)
+at USENIX ASE, please refer to [ase](../../tree/ase) branch.**
 
-## 빠른 시작 (Docker)
-1. 환경파일 준비
-   ```bash
-   .env
-   # SECRET_KEY, DB_PASSWORD, DB_ROOT_PASSWORD를 원하는 값으로 입력
-   ```
-2. 빌드 & 실행
-   ```bash
-   docker compose up -d --build
-   ```
-3. 접속: http://localhost:5000
+# Setup
+## Requirement
 
-## 환경변수 (.env)
-- `SECRET_KEY` : 긴 랜덤 문자열 (세션/CSRF 키)
-- `DB_ENGINE` : `mysql`(기본) 또는 `sqlite`
-- `DB_HOST` : MySQL 컨테이너 이름 `db`
-- `DB_PORT` : 3306 (컨테이너 내부용, 호스트 포트는 Compose `ports`에서 조정)
-- `DB_USER` / `DB_PASSWORD` : 일반 계정
-- `DB_NAME` : 생성할 DB 이름
-- `DB_ROOT_PASSWORD` : 루트 계정 비밀번호
-- `MAX_CONTENT_LENGTH` : 업로드 최대 크기(바이트)
+1. Instructors should modify the [`config.json`](scripts/config.json) file to
+   start with.
 
-## 관리 명령어
-- 상태 확인: `docker compose ps`
-- 로그 보기: `docker compose logs -f web`
-- 중지: `docker compose down`
-- 데이터까지 제거: `docker compose down -v` (기존 데이터 없을 때만)
-- 다시 빌드: `docker compose up -d --build`
+1. Students need to obtain the [`config.json`](scripts/config.json) file
+   prepared by the instructors in Step 1.
 
-## 트러블슈팅
-- **3306 포트 충돌**: 다른 MySQL이 점유 중.  
-  - 중지하거나, `docker-compose.yml`의 `db` 서비스 `ports`를 `3307:3306`처럼 변경 (`.env`의 `DB_PORT`는 3306 유지).
-- **db unhealthy**: 비번/계정 불일치 또는 이전 볼륨 충돌.  
-  - `.env`의 `DB_USER/DB_PASSWORD/DB_ROOT_PASSWORD` 확인 후 `docker compose down -v` → `up -d --build`.
-- **web이 localhost:3306에 대기**: `.env`의 `DB_HOST`를 `db`로 설정.
+1. Each team should prepare for a PGP public & private key pair in their own
+   machine. The teams' public keys should be distributed before the game begins.
 
-## 프로젝트 구조
-- `app.py` : Flask 앱 팩토리
-- `models/` : SQLAlchemy 모델
-- `routes/` : 블루프린트 라우트
-- `services/ctftime.py` : 외부 이벤트 조회
-- `static/`, `templates/` : 정적/템플릿 자원
-- `docker-entrypoint.sh` : 컨테이너 부팅 시 DB 대기 + 테이블 생성 + 서버 실행
+1. Each student should install GPG and Docker on their own machine in
+   order to play CTF.
 
-## Docker로 완전 초기 설정하기
-1. `.env.example`을 복사해 `.env`를 만든 뒤 값(특히 `SECRET_KEY`/DB 비밀번호)을 원하는 값으로 수정합니다.
-2. `docker compose up --build`를 실행합니다. 처음 실행 시 MySQL 준비 → 테이블 생성까지 자동으로 진행됩니다.
-3. 브라우저에서 `http://localhost:5000` 접속.
+## For Students
 
-### 기본 구조
-- `web`: Flask + Gunicorn 컨테이너 (`Dockerfile`).
-- `db`: MySQL 8.0 컨테이너. `DB_*` 값을 `.env`로 전달하며, 데이터는 `mysql_data` 볼륨에 보존됩니다.
-- 업로드 폴더는 호스트의 `static/uploads`, `static/wargame_attachments`와 볼륨으로 연결됩니다.
+Git-based CTF consists of three major steps: preparation, injection, and
+exercise. We provide a set of tools that help students play the CTF for each
+step.
 
-### 주요 환경 변수 (`.env`)
-- `SECRET_KEY`: Flask 세션/CSRF 키.
-- `DB_ENGINE`: 기본 `mysql` (sqlite를 쓰려면 `sqlite`로 변경하고 `DB_HOST` 등은 무시됨).
-- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`: MySQL 연결 정보.
-- `DB_ROOT_PASSWORD`: MySQL 루트 패스워드(컨테이너 초기화용).
-- `MAX_CONTENT_LENGTH`: 업로드 최대 크기(바이트).
+#### 1. Preparation Step
 
-### 자주 쓰는 명령
-- 빌드 및 실행: `docker compose up --build`
-- 백그라운드 실행: `docker compose up -d`
-- 정리: `docker compose down` (데이터까지 지우려면 `docker compose down -v`)
+In this step, you need to prepare a network service running in a Docker
+container. The final outcome of this step is a Git repository that contains a
+Dockerfile as well as source code for the service program. We provide several
+useful tools and scripts that help create such a service container.
 
-### 참고
-- MySQL 없이 빠르게 띄우려면 `.env`에서 `DB_ENGINE=sqlite`로 설정하고 `docker compose up web`만 실행할 수 있습니다.
+- We provide a template [Dockerfile](service_template), which can be used to
+  prepare a service application.
+
+- You can check whether a service repository is valid or not by running:
+    ```bash
+    ./gitctf.py verify service --team [TEAMNAME] --branch [BRANCH]
+    ```
+  The above command checks whether the BRANCH branch of the repository follows
+  the Git-based CTF convention.
+
+#### 2. Injection Step
+
+You should inject vulnerabilities into the service application prepared in the
+previous step. You should also provide a working exploit for each injected
+vulnerability as a proof. An exploit in Git-based CTF is a program running in a
+Docker container, and it should follow a specific format, e.g., it should be
+properly encrypted and signed. We provide several tools and scripts that help
+creating and verifying injected vulnerabilities and exploits.
+
+- You should write an exploit program/script using the template
+  [Dockerfile](exploit_template) we provided.
+
+- You can verify your exploit against a service of a specific version (i.e.,
+  specific branch). Assume that you have a local copy of a target service at
+  SRVDIR, and your exploit at EXPDIR. You can then run the following command to
+  test whether your exploit works within a SEC seconds against the BRANCH branch version of the
+  service:
+    ```bash
+    ./gitctf.py verify exploit --exploit [EXPDIR] --service-dir [SRVDIR] --branch [BRANCH] --timeout [SEC]
+    ```
+  Also, if you add the ```--encrypt``` option, you can encrypt the exploit when
+  it gets verified. You should upload (i.e. commit and push) this encrypted
+  exploit, which will be named as ```exploit_bugN.zip.pgp``` in the root
+  directory of each branch. Here, ```bugN``` is the corresponding branch name.
+
+- After uploading all the exploits, you can verify your submitted exploits
+  against each branch of your service, with the following command.
+
+    ```bash
+    ./gitctf.py verify injection --team [TEAMNAME]
+    ```
+
+#### 3. Exercise Step
+
+In this step, you finally play the actual CTF game. To attack other opponents,
+you should create an issue that contains an encrypted attack described in the
+previous step.
+
+- To prepare for an attack, you should create a zip file that has a directory
+  containing an exploit Dockerfile as well as an exploit script/program. You
+  then sign and encrypt the zipped directory, and submit it as an issue in the
+  target team's repository. Assuming that you have a local copy of a target
+  service at SRVDIR, and your exploit at EXPDIR, the following command will
+  perform these steps automatically.
+    ```bash
+    ./gitctf.py submit --exploit [EXPDIR] --service-dir [SRVDIR] --target [TEAMNAME]
+    ```
+
+- You can see issues in your own repository to check whether you are attacked by
+  other opponents. Since each issue is encrypted with your own key, you can
+  download the attack and replay it in your own local machine. Especially, you
+  may want to analyze how an unintended vulnerability is exploited. To verify
+  unintended exploit, you can use `gitctf.py verify exploit` command described
+  above.
+
+- You can also check your score with our tool. Assuming that the scoreboard
+  repository URL is properly given by `config.json` file, you can invoke the
+  following command to see the current score.
+    ```bash
+    ./gitctf.py score
+    ```
+  Note that the points you see from the above command may slightly differ from
+  the actual points computed at the instructor's machine, because this command
+  relies on the system time to compute the unintended points.
+  Also, This command automatically populates an HTML file `score.html` that
+  shows a graph representing score over time for each team or person.
+
+## For Instructors
+
+There should be a machine that is dedicated to evaluating the attacks in
+Git-based CTF. The machine needs to be time-synchronized with an NTP server.
+
+- Create the repository of scoreboard. You can check out an example
+  [scoreboard](https://github.com/KAIST-IS521/2018s-gitctf-score).
+
+- Click the `Watch` button in each team's service repository.
+
+- After the injection phase, you need to create a
+  [`config.json`](scripts/config.json) file, which describes the [basic
+  settings](#configuration) for a CTF.
+
+- After the injection phase, you need to fill the commit hash of N-th injected
+  bug of each team, with the following command.
+    ```bash
+    ./gitctf.py hash
+    ```
+
+- During the exercise phase, the machine should run the following command
+  assuming that you have a proper set-up for the ssh-agent and the gpg-agent,
+  because this command will invoke a series of `ssh` and `gpg` commands, and
+  such commands require a user to enter a passphrase.
+    ```bash
+    ./gitctf.py eval --token API_TOKEN
+    ```
+  This command will run in an infinite loop, automatically fetch issues from
+  the repositories, and update the scoreboard. This process will be killed when
+  CTF is finished.
+
+
+## Configuration
+
+[This file](scripts/config.json) contains critical information for managing
+Git-based CTF. This script must be created by an instructor, and distributed to
+students before a CTF begins. You can check out an [example configuration file](https://github.com/KAIST-IS521/2018-Spring/blob/master/Activities/config.json)
+
+##### The [config.json](scripts/config.json) file requires the following fields:
+
+1. `player`: Your GitHub ID.
+1. `player_team`: Your team name.
+1. `score_board`: The URL for the scoreboard repository.
+1. `repo_owner`: The name of the owner of the CTF repositories.
+1. `intended_pts`: Points for exploiting an intended vulnerability.
+1. `unintended_pts`: Points for exploiting an unintended vulnerability.
+1. `round_frequency`: How often will our system change the round? (in sec.)
+1. `start_time`: When does the exercise phase start? You should put a string in the ISO8601
+   format, e.g., you can use `date -Iseconds`.
+1. `end_time`: When does this CTF finish? You should put a string in the ISO8601
+   format.
+1. `exploit_timeout`: Timeout for exploit. (in sec.)
+    1. `exercise_phase`: Timeout when verify exploit in exercise phase.
+    1. `injection_phase`: Timeout when verify exploit in injection phase.
+1. `teams`: Participating teams' information.
+    1. `repo_name`: The URL for each team's service repository.
+    1. `pub_key_id`: The public key ID of the team.
+    1. `bugN`: The commit hash of the N-th injected bug of this team.
+1. `individual`: Participating individuals' information. Each field is separated
+   by participants' GitHub IDs.
+    1. `pub_key_id`: The public key ID of the individual.
+    1. `team`: Which team does this individual belong to?
+
+# GitCTF Origin Authors
+
+This research project has been conducted by [SoftSec Lab](https://softsec.kaist.ac.kr) at KAIST.
+
+* Seongil Wi
+* [Jaeseung Choi](https://softsec.kaist.ac.kr/~jschoi/)
+* [Sang Kil Cha](https://softsec.kaist.ac.kr/~sangkilc/)
+
+# Citing Git-based CTF
+
+To cite paper:
+```
+@INPROCEEDINGS{wi:usenixase:2018,
+    author = {SeongIl Wi and Jaeseung Choi and Sang Kil Cha},
+    title = {Git-based {CTF}: A Simple and Effective Approach to Organizing In-Course Attack-and-Defense Security Competition},
+    booktitle = {2018 {USENIX} Workshop on Advances in Security Education ({ASE} 18)},
+    year = {2018}
+}
+```
+
+# License
+
+This project is licensed under the [Apache License](LICENSE.md)
+
+# Acknowledgement
+
+We thank GitHub for providing unlimited free plan for organizing classes. We also thank HyungSeok Han and anonymous reviewers for their constructive feedback. This work was supported by Institute for Information & communications Technology Promotion (IITP) grant funded by the Korea government (MSIT)
