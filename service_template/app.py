@@ -54,7 +54,9 @@ def create_app():
     from routes.research import research_bp
     from routes.wargame import wargame_bp
     from routes.minigame import minigame_bp
+    from routes.tools import tools_bp
 
+    app.register_blueprint(tools_bp)
     app.register_blueprint(home_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(research_bp)
