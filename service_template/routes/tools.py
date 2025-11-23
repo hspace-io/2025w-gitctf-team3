@@ -11,9 +11,9 @@ from PIL import Image
 tools_bp = Blueprint("tools", __name__, url_prefix="/tools")
 
 
-def safe_filename(filename: str) -> str:
-    """Prevent path traversal and normalize separators."""
-    return filename.replace("/", "_").replace("..", "_")
+def safe_filename(filename):
+    filneame = filename.replace("/", "").replace("..", "_")
+    return filename
 
 
 def convert_image(args):
