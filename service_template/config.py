@@ -10,6 +10,7 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY") or os.urandom(32)
+    DEV_TOKEN = os.environ.get("DEV_TOKEN", "devmode")
 
     DB_USER = os.environ.get("DB_USER", "huser")
     DB_PASSWORD = os.environ.get("DB_PASSWORD", "hs1234!!")

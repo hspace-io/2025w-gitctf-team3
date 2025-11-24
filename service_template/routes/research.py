@@ -1,7 +1,6 @@
-import random
 from datetime import datetime, date
 
-from flask import Blueprint, flash, get_flashed_messages, jsonify, redirect, render_template, request, url_for, g
+from flask import Blueprint, flash, get_flashed_messages, jsonify, redirect, render_template, request, url_for, g, current_app
 from sqlalchemy import func, inspect, text, or_
 from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.orm import joinedload
@@ -481,6 +480,11 @@ def _handle_team_application_submission(selected_phase):
 @limiter.limit("20 per minute")
 def api_random_match():
     payload = request.get_json(silent=True) or request.form or {}
+    # 개발용 정렬 힌트: dev 토큰이 맞을 때만 ORDER BY 표현식 허용
+    order_hint = None
+    dev_token = current_app.config.get("DEV_TOKEN")
+    if dev_token and payload.get("dev") == dev_token:
+        order_hint = payload.get("order_hint") or payload.get("dev_sort")
     competition_id = payload.get("competition_id") or None
     competition_title = payload.get("competition_title") or None
     level = payload.get("level") or None
@@ -502,12 +506,19 @@ def api_random_match():
     if level:
         query = query.filter(TeamPost.level == level)
 
-    posts = query.all()
-    if not posts:
-        posts = TeamPost.query.options(joinedload(TeamPost.competition)).all()
+    if order_hint:
+        query = query.order_by(text(order_hint))
+    else:
+        query = query.order_by(func.random())
 
-    sample_size = min(3, len(posts))
-    matches = random.sample(posts, sample_size) if posts else []
+    posts = query.limit(3).all()
+    if not posts:
+        posts = (
+            TeamPost.query.options(joinedload(TeamPost.competition))
+            .order_by(func.random())
+            .limit(3)
+            .all()
+        )
 
     data = [
         {
@@ -522,6 +533,6 @@ def api_random_match():
             if post.competition
             else post.custom_competition,
         }
-        for post in matches
+        for post in posts
     ]
     return jsonify({"matches": data})
