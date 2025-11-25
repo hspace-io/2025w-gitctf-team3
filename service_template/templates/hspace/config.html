@@ -1,0 +1,153 @@
+{% extends "hspace/base.html" %}
+
+{% block extra_css %}
+.hero-mini {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.hero-mini h1 {
+    margin: 0;
+    font-size: clamp(32px, 6vw, 48px);
+    background: linear-gradient(90deg, #8eb5ff, #d599ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-mini p {
+    margin-top: 18px;
+    color: #cdd3ff;
+    line-height: 1.6;
+}
+
+.converter-card {
+    background: rgba(6, 10, 32, 0.85);
+    border: 1px solid rgba(146, 163, 255, 0.25);
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 35px 120px rgba(10, 14, 43, 0.45);
+    backdrop-filter: blur(25px);
+}
+
+.form-group {
+    margin-bottom: 30px;
+}
+
+label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #dfe4ff;
+}
+
+input, button {
+    width: 100%;
+    border-radius: 16px;
+    border: 2px solid rgba(138, 153, 255, 0.25);
+    padding: 16px;
+    background: rgba(8, 12, 34, 0.9);
+    color: #f8f9ff;
+    font-size: 16px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #8b9cff;
+    box-shadow: 0 0 0 3px rgba(146, 163, 255, 0.25);
+}
+
+button {
+    margin-top: 10px;
+    background: linear-gradient(120deg, #5a70ff, #9f53ff 60%, #ff8fd8);
+    border: none;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 20px 45px rgba(95, 88, 255, 0.35);
+}
+
+#message {
+    margin-top: 20px;
+    padding: 16px;
+    border-radius: 14px;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+
+#message:empty {
+    display: none;
+}
+
+.status-success {
+    background: rgba(64, 201, 154, 0.15);
+    border-color: rgba(79, 213, 165, 0.4);
+    color: #4ce9b8;
+}
+
+.status-error {
+    background: rgba(255, 124, 138, 0.12);
+    border-color: rgba(255, 124, 138, 0.45);
+    color: #ff8a9b;
+}
+{% endblock %}
+
+{% block content %}
+<div class="hero-mini">
+    <h1>정교한 모드 제어</h1>
+    <p>아래 패널에서 공개된 모드를 바꾸고, 실시간으로 대시보드를 리프레시하세요.</p>
+</div>
+
+<div class="converter-card">
+    <form id="form">
+        <div class="form-group">
+            <label for="mode">표시 모드</label>
+            <input
+                type="text"
+                id="mode"
+                name="mode"
+                value="{{ g.get('hspace_user').config.mode }}"
+            />
+        </div>
+        <button type="submit" id="submit">변경 사항 반영</button>
+    </form>
+    <div id="message"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const form = document.getElementById('form');
+const message = document.getElementById('message');
+const modeInput = document.getElementById('mode');
+
+function showMessage(text, type) {
+    message.textContent = text;
+    message.className = type ? `status-${type}` : '';
+}
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+        const res = await fetch('/hspace/api/config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                config: {
+                    mode: modeInput.value
+                }
+            })
+        });
+        const data = await res.json();
+        if (data.error) {
+            showMessage(`❌ 오류가 발생했습니다: ${data.error}`, 'error');
+        } else {
+            showMessage('✅ 설정이 갱신되었습니다.', 'success');
+        }
+    } catch (err) {
+        showMessage(`❌ 네트워크 오류: ${err.message}`, 'error');
+    }
+});
+</script>
+{% endblock %}

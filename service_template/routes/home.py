@@ -12,7 +12,6 @@ def current_user():
 def inject_user():
     return {"current_user": current_user()}
 
-
 @home_bp.route("/")
 def index():
     return render_template("index.html")

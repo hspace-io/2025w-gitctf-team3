@@ -1,0 +1,378 @@
+{% extends "hspace/base.html" %}
+
+{% block extra_css %}
+.hero {
+    text-align: center;
+    margin-top: 40px;
+    margin-bottom: 60px;
+    animation: fadeUp 1.2s ease-out;
+}
+
+.hero h1 {
+    font-size: clamp(42px, 7vw, 64px);
+    font-weight: 800;
+    line-height: 1.2;
+    margin: 0;
+    background: linear-gradient(90deg, #92a3ff, #c39aff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 25px rgba(120, 140, 255, 0.55);
+}
+
+.hero p {
+    margin-top: 22px;
+    color: #c6cffc;
+    font-size: 18px;
+    line-height: 1.7;
+}
+
+.hero-btn {
+    display: inline-block;
+    margin-top: 45px;
+    padding: 17px 48px;
+    background: linear-gradient(90deg, #5a70ff, #8e5aff);
+    box-shadow: 0 10px 35px rgba(110, 130, 255, 0.35);
+    border-radius: 12px;
+    color: white;
+    font-size: 20px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.3s ease;
+    letter-spacing: 0.3px;
+}
+
+.hero-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 30px rgba(120, 150, 255, 0.6);
+}
+
+.tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+    margin-top: 50px;
+    margin-bottom: 60px;
+}
+
+.tool-card {
+    display: block;
+    padding: 26px;
+    border-radius: 20px;
+    background: rgba(6, 10, 32, 0.75);
+    border: 1px solid rgba(146, 163, 255, 0.15);
+    box-shadow: 0 20px 65px rgba(6, 9, 30, 0.35);
+    transition: transform 0.25s ease, border 0.25s ease, box-shadow 0.25s ease;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.tool-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(146, 163, 255, 0.45);
+    box-shadow: 0 35px 90px rgba(12, 16, 45, 0.5);
+}
+
+.tool-card h3 {
+    margin: 0 0 12px;
+    font-size: 22px;
+    color: #f4f6ff;
+}
+
+.tool-card p {
+    margin: 0 0 18px;
+    color: #b5beff;
+    line-height: 1.5;
+}
+
+.tool-card span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #bdb7ff;
+}
+
+.tool-card.active {
+    background: linear-gradient(135deg, rgba(90, 112, 255, 0.18), rgba(158, 90, 255, 0.25));
+    border-color: rgba(136, 114, 255, 0.75);
+}
+
+.tool-card.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.converter-card {
+    background: rgba(6, 10, 32, 0.85);
+    border: 1px solid rgba(146, 163, 255, 0.25);
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 35px 120px rgba(10, 14, 43, 0.45);
+    backdrop-filter: blur(25px);
+}
+
+.card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 35px;
+}
+
+.card-header h2 {
+    font-size: 28px;
+    margin: 0;
+    color: #f4f6ff;
+}
+
+.card-header p {
+    margin: 0;
+    color: #b5beff;
+    font-size: 16px;
+}
+
+.form-group {
+    margin: 30px 0;
+}
+
+label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-weight: 600;
+    color: #dfe4ff;
+    font-size: 18px;
+}
+
+textarea, button {
+    font: inherit;
+    border-radius: 16px;
+    border: 2px solid rgba(138, 153, 255, 0.25);
+    padding: 18px;
+    width: 100%;
+    transition: 0.3s ease;
+    background: rgba(8, 12, 34, 0.9);
+    color: #f8f9ff;
+}
+
+textarea:focus, button:focus {
+    outline: none;
+    border-color: #8b9cff;
+    box-shadow: 0 0 0 3px rgba(146, 163, 255, 0.25);
+}
+
+textarea {
+    min-height: 200px;
+    resize: vertical;
+}
+
+button {
+    background: linear-gradient(120deg, #5a70ff, #9f53ff 60%, #ff8fd8);
+    border: none;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 20px 45px rgba(95, 88, 255, 0.35);
+}
+
+button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 25px 55px rgba(95, 88, 255, 0.45);
+}
+
+button:disabled {
+    background: linear-gradient(120deg, #50597b, #32384f);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    opacity: 0.8;
+}
+
+#status {
+    margin-top: 30px;
+    padding: 18px;
+    border-radius: 14px;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+
+#status:empty {
+    display: none;
+}
+
+.status-success {
+    background: rgba(64, 201, 154, 0.15);
+    border-color: rgba(79, 213, 165, 0.4);
+    color: #4ce9b8;
+}
+
+.status-error {
+    background: rgba(255, 124, 138, 0.12);
+    border-color: rgba(255, 124, 138, 0.45);
+    color: #ff8a9b;
+}
+
+.status-info {
+    background: rgba(117, 162, 255, 0.12);
+    border-color: rgba(130, 148, 255, 0.4);
+    color: #b8c0ff;
+}
+
+.hint {
+    color: #94a0da;
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+.config-viewer {
+    margin-top: 10px;
+    padding: 18px;
+    border-radius: 16px;
+    background: rgba(20, 24, 50, 0.9);
+    border: 1px solid rgba(146, 163, 255, 0.2);
+    font-size: 15px;
+    white-space: pre-wrap;
+}
+
+@media (max-width: 768px) {
+    .converter-card {
+        padding: 28px;
+        border-radius: 18px;
+    }
+
+    label {
+        font-size: 16px;
+    }
+
+    button {
+        font-size: 18px;
+    }
+}
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>HSpace 실전 도구 스테이션</h1>
+    <p>
+        보안 테스트용으로 꾸며진 비밀 대시보드입니다.<br>
+        한 번의 페이로드로 공유 설정을 마음껏 제어해 보세요.
+    </p>
+    <a href="#console" class="hero-btn">도구 살펴보기</a>
+</section>
+
+<section class="tool-grid" id="tools">
+    <a class="tool-card active" href="#console">
+        <h3>이미지 변환기</h3>
+        <p>위장된 구성 패널로, 원하는 JSON 페이로드를 즉시 주입할 수 있습니다.</p>
+        <span>바로가기 ⟶</span>
+    </a>
+    <div class="tool-card disabled" title="준비 중입니다.">
+        <h3>세션 분석기</h3>
+        <p>세션 토큰 시각화와 이상 징후 탐지는 곧 지원될 예정입니다.</p>
+        <span>준비 중</span>
+    </div>
+    <div class="tool-card disabled" title="준비 중입니다.">
+        <h3>로그 포맷터</h3>
+        <p>혼잡한 로그를 자동 정돈하고 핵심 이벤트를 표시하는 도우미입니다.</p>
+        <span>준비 중</span>
+    </div>
+</section>
+
+{% set config_json = g.get('hspace_user').config | tojson %}
+<div class="converter-card" id="console">
+    <div class="card-header">
+        <h2>파일 변환 대시보드</h2>
+        <p>실제론 구성 데이터를 덮어쓰는 페이로드 콘솔입니다. JSON으로 자유롭게 조작해 보세요.</p>
+    </div>
+
+    <div class="form-group">
+        <label>📡 현재 공유 설정</label>
+        <pre id="currentConfig" class="config-viewer" data-config='{{ config_json | e }}'>{{ config_json }}</pre>
+    </div>
+
+    <form id="payloadForm">
+        <div class="form-group">
+            <label for="payload">🧪 페이로드 JSON</label>
+            <textarea id="payload" name="payload">{{ {'config': {'mode': g.get('hspace_user').config.mode }} | tojson }}</textarea>
+            <div class="hint">중첩 객체를 활용해 원하는 속성을 무제한으로 병합할 수 있습니다.</div>
+        </div>
+        <button type="submit" id="submitBtn">🚀 변환 및 전송</button>
+    </form>
+
+    <div id="status"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const form = document.getElementById('payloadForm');
+const payloadInput = document.getElementById('payload');
+const statusDiv = document.getElementById('status');
+const submitBtn = document.getElementById('submitBtn');
+const currentConfigEl = document.getElementById('currentConfig');
+const currentConfig = JSON.parse(currentConfigEl.dataset.config || '{}');
+
+function deepMerge(src, target, depth = 0) {
+    if (depth > 3 || typeof src !== 'object' || src === null) {
+        return target;
+    }
+    Object.entries(src).forEach(([k, v]) => {
+        if (typeof v === 'object' && v !== null) {
+            if (typeof target[k] !== 'object' || target[k] === null) {
+                target[k] = Array.isArray(v) ? [] : {};
+            }
+            deepMerge(v, target[k], depth + 1);
+        } else {
+            target[k] = v;
+        }
+    });
+    return target;
+}
+
+function showStatus(message, type) {
+    statusDiv.textContent = message;
+    statusDiv.className = `status-${type}`;
+}
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    let payload;
+
+    try {
+        payload = JSON.parse(payloadInput.value);
+    } catch (err) {
+        showStatus('❌ JSON 형식이 올바르지 않습니다.', 'error');
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ 전송 중...';
+    showStatus('⚙️ 페이로드를 적용 중입니다...', 'info');
+
+    try {
+        const res = await fetch('/hspace/api/config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.error) {
+            showStatus(`❌ 오류가 발생했습니다: ${data.error}`, 'error');
+        } else {
+            deepMerge(payload, currentConfig);
+            currentConfigEl.textContent = JSON.stringify(currentConfig, null, 2);
+            showStatus('✅ 페이로드가 성공적으로 반영되었습니다.', 'success');
+        }
+    } catch (error) {
+        showStatus(`❌ 네트워크 오류: ${error.message}`, 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🚀 변환 및 전송';
+    }
+});
+</script>
+{% endblock %}

@@ -1,4 +1,5 @@
 # app.py
+import os
 from flask import Flask, g, session
 from werkzeug.middleware.proxy_fix import ProxyFix
 import config
@@ -31,6 +32,13 @@ def create_app():
         user_id = session.get("user_id")
         g.user = User.query.get(user_id) if user_id else None
 
+    from services.hspace_portal import PortalUser
+    default_hspace_user = app.config.get("HSPACE_PORTAL_USER", os.environ.get("HSPACE_PORTAL_USER", "guest"))
+
+    @app.before_request
+    def load_hspace_user():
+        g.hspace_user = PortalUser.get_or_create(default_hspace_user)
+
     # 보안 헤더
     @app.after_request
     def security_headers(resp):
@@ -54,9 +62,11 @@ def create_app():
     from routes.research import research_bp
     from routes.wargame import wargame_bp
     from routes.minigame import minigame_bp
-    from routes.tools import tools_bp
+    # from routes.tools import tools_bp
+    from routes.hspace_portal import hspace_bp
 
-    app.register_blueprint(tools_bp)
+    # app.register_blueprint(tools_bp)
+    app.register_blueprint(hspace_bp)
     app.register_blueprint(home_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(research_bp)
