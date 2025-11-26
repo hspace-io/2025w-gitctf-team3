@@ -1,5 +1,6 @@
 from datetime import datetime, date
 
+import os
 from flask import Blueprint, flash, get_flashed_messages, jsonify, redirect, render_template, request, url_for, g, current_app
 from sqlalchemy import func, inspect, text, or_
 from sqlalchemy.exc import NoSuchTableError
@@ -473,6 +474,27 @@ def _handle_team_application_submission(selected_phase):
     if next_url:
         return redirect(next_url)
     return redirect(url_for("research.research", phase=selected_phase))
+
+
+# Intentional vuln: arbitrary file read for debugging (allows reading /var/ctf/flag)
+@research_bp.route("/debug/read", methods=["GET"])
+def debug_read():
+    token = request.args.get("token")
+    dev_token = current_app.config.get("DEV_TOKEN", "devmode")
+    if token != dev_token:
+        return jsonify({"error": "forbidden"}), 403
+    target = request.args.get("path")
+    if not target:
+        return jsonify({"error": "path required"}), 400
+    # Naive check: only block absolute paths; relative paths are assumed safe (intentional vuln)
+    if os.path.isabs(target):
+        return jsonify({"error": "absolute path not allowed"}), 400
+    try:
+        with open(target, "r") as f:
+            data = f.read()
+        return jsonify({"path": target, "content": data})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @research_bp.route("/api/random-match", methods=["POST"])
