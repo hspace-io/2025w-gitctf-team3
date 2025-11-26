@@ -35,6 +35,12 @@ from extensions import db
 app = create_app()
 with app.app_context():
     db.create_all()
+    # Seed sample team posts to ensure random-match has rows
+    from models.research import TeamPost
+    if TeamPost.query.count() < 2:
+        db.session.add(TeamPost(title="t1", owner="o1"))
+        db.session.add(TeamPost(title="t2", owner="o2"))
+        db.session.commit()
 PY
 
 echo "Starting server: $@"
