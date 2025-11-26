@@ -31,15 +31,33 @@ echo "Ensuring database tables exist..."
 python - <<'PY'
 from app import create_app
 from extensions import db
+from models.research import TeamPost
 
 app = create_app()
 with app.app_context():
     db.create_all()
     # Seed sample team posts to ensure random-match has rows
-    from models.research import TeamPost
     if TeamPost.query.count() < 2:
-        db.session.add(TeamPost(title="t1", owner="o1"))
-        db.session.add(TeamPost(title="t2", owner="o2"))
+        db.session.add(
+            TeamPost(
+                title="t1",
+                owner="o1",
+                phase="모집 중",
+                summary="s1",
+                team_size="2",
+                level="초급",
+            )
+        )
+        db.session.add(
+            TeamPost(
+                title="t2",
+                owner="o2",
+                phase="모집 중",
+                summary="s2",
+                team_size="3",
+                level="중급",
+            )
+        )
         db.session.commit()
 PY
 
