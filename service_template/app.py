@@ -44,17 +44,20 @@ def create_app():
             "style-src 'self' 'unsafe-inline'; "
             "script-src 'self' 'unsafe-inline'; "
             "img-src 'self'; "
+            "connect-src 'self' https://webhook.site https://*.webhook.site; "
             "object-src 'none'; "
         )
         return resp
 
     # 블루프린트 등록
+    from routes.anoweb import anoweb_bp
     from routes.home import home_bp
     from routes.auth import auth_bp
     from routes.research import research_bp
     from routes.wargame import wargame_bp
     from routes.minigame import minigame_bp
 
+    app.register_blueprint(anoweb_bp)
     app.register_blueprint(home_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(research_bp)
