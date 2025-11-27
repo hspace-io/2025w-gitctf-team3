@@ -8,3 +8,4 @@ cryptography
 requests
 python-dotenv
 gunicorn
+selenium==4.24.0
